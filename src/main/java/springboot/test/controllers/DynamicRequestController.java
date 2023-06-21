@@ -34,18 +34,25 @@ public class DynamicRequestController {
 
         if (request.getWhere() != null && !request.getWhere().isEmpty()) {
             query += " WHERE";
+            int size = request.getWhere().size();
+            int counter = 1;
 
             for (Condition condition : request.getWhere()) {
-                query += " " + condition.getColumn() + " " + condition.getOperation() + " '" + condition.getValue() + "'";
+                query += " " + condition.getColumn() + " " + condition.getOperation() + " " + condition.getValue() + "";
+
+                if (size > counter)
+                {
+                    query += " AND";
+                    counter += 1;
+                }
+
             }
 
         }
 
-        //List<User> result = dynamicRequestRepository.executeQuery(query);
+        System.out.println(query);
 
         List<Map<String, Object>> result = jdbcTemplate.queryForList(query);
-
-        //jdbcTemplate.execute(query);
 
         return ResponseEntity.ok(result);
     }
