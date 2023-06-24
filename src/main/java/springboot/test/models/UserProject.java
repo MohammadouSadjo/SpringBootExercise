@@ -24,6 +24,4 @@ public class UserProject {
     @Column(name = "user_id")
     private String user_id;
 
-    @Column(name = "owner")
-    private Boolean owner;
 }

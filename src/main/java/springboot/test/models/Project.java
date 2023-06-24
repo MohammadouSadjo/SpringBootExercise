@@ -19,9 +19,13 @@ public class Project {
     @Column(name = "id")
     private long id;
 
+    @Column(name="user_id")
+    private long user_id;
+
     @Column(name = "intitule")
     private String intitule;
 
     @Column(name = "date_expiration")
     private Date date_expiration;
+
 }
