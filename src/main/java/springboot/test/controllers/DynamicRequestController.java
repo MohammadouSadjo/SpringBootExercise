@@ -2,6 +2,8 @@ package springboot.test.controllers;
 
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,6 +13,9 @@ import springboot.test.models.Condition;
 import springboot.test.models.Request;
 import springboot.test.models.User;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +30,7 @@ public class DynamicRequestController {
     private JdbcTemplate jdbcTemplate;
 
     @PostMapping()
-    public ResponseEntity<?> Postrequest(@Validated @RequestBody Request request) {
+    public void Postrequest(@Validated @RequestBody Request request, HttpServletResponse response) throws IOException {
 
         String columns = String.join(",", request.getColumns());
         String tables = String.join(",", request.getTables());
@@ -50,11 +55,39 @@ public class DynamicRequestController {
 
         }
 
-        System.out.println(query);
-
         List<Map<String, Object>> result = jdbcTemplate.queryForList(query);
 
-        return ResponseEntity.ok(result);
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=result.csv");
+
+        PrintWriter writer = response.getWriter();
+        CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
+
+        // Écriture des en-têtes CSV
+        if (!result.isEmpty()) {
+            Map<String, Object> firstRow = result.get(0);
+            for (String column : firstRow.keySet()) {
+                csvPrinter.print(column);
+            }
+            csvPrinter.println();
+        }
+
+        // Écriture des données CSV
+        for (Map<String, Object> row : result) {
+            for (Object value : row.values()) {
+                csvPrinter.print(value);
+            }
+            csvPrinter.println();
+        }
+
+        csvPrinter.flush();
+        csvPrinter.close();
+
+        //System.out.println(query);
+
+        //List<Map<String, Object>> result = jdbcTemplate.queryForList(query);
+
+        //return ResponseEntity.ok(result);
     }
 
 
